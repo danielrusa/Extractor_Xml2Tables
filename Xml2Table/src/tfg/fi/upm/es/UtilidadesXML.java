@@ -1,4 +1,4 @@
-package src.tfg.fi.upm.es;
+package tfg.fi.upm.es;
 
 
 import java.io.FileInputStream;
