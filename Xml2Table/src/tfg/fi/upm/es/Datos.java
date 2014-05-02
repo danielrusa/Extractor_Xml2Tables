@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 public class Datos {
@@ -47,6 +48,66 @@ public class Datos {
     	}
     }
 
+    public void insertaColumna(Node n,String dato,String hijos,String path){
+    	String nombreColumna=n.getNodeName().replaceAll("cbc:", ""); // Nombre de columna
+    	String tabla=n.getParentNode().getNodeName().replaceAll("cac:", "");
+    	String nombrePadreTabla=n.getParentNode().getParentNode().getNodeName().replaceAll("cac:", "");
+    	ArrayList<Tuplas> at=this.tablas.get(tabla);
+    	boolean insertado=false;
+    	for (int i=0;i<at.size()&&!insertado;i++){ // Para todos el array de Tuplas columna,valor
+    		Tuplas t=at.get(i);
+    		if (!t.existeColumna(nombreColumna) && t.getPath().trim().equals(path)){ // Si no esta la columna lo añado
+    			t.insertarDatoEnColumna(nombreColumna, dato);
+    			this.insertarAtributos(t, n);
+    			insertado=true;
+    			break;
+    		}
+    	}
+    	if (!insertado){ // Si esta en todas Creo nueva tupla y la añado a la lista
+    		Tuplas t=new Tuplas(ta.getPoscion(tabla),tabla,nombrePadreTabla,hijos,path);
+    		this.insertarAtributos(t, n);
+    		//(int posicion,String tabla, String padre, String hijos, String path)
+    		at.add(t);
+    	}
+    }
+    
+    public void insertarAtributos(Tuplas t,Node n){
+		NamedNodeMap nm =n.getAttributes();
+		if(nm.getLength()>0){
+			for (int j=0;j<nm.getLength();j++){
+				ta.insertarColumna(this.getPadre(n), this.getNombreAtributo(n, nm.item(j)), this.getLongitud(nm.item(j)));
+				if (nm.item(j).getNodeName().equals("schemeName"))
+					t.insertarDatoEnColumna(this.getNombreAtributo(n, nm.item(j)), n.getTextContent());
+				else
+					t.insertarDatoEnColumna(this.getNombreAtributo(n, nm.item(j)), nm.item(j).getTextContent());
+			}
+		}
+    }
+    
+	private String getNombreAtributo(Node n1,Node n2){
+		String aux="";
+		if (n2.getNodeName().contains("schemeName"))
+			aux=n2.getNodeValue();
+		else
+			aux=n2.getNodeName();
+			
+		String t=n1.getNodeName().replaceAll("cbc:", "")+"-"+aux;
+		if (t.length()>63){
+			return t.substring(t.length()-63, t.length());
+		} else {
+			return t;
+		}
+	}
+    
+	private String getPadre(Node n){
+		return n.getParentNode().getNodeName().replaceAll("cac:", "");
+	}
+	
+	
+	private int getLongitud(Node n){
+		return n.getTextContent().length();
+	}
+    /*
     public void insertaColumna(Node n,String dato,String hijos,String path){ // Node n es un atributo
     	//this.imprimirDatos();
     	String nombreColumna=n.getNodeName().replaceAll("cbc:", "");
@@ -76,12 +137,7 @@ public class Datos {
     public void insertaColumna(String atributo,String padre,Node n2,String dato,String hijos,String path){ // Node n es un atributo
     	//this.imprimirDatos();
     	String nombreColumna=atributo;
-    	/*
-    	if (nombreColumna.equals("ID-NIF")){
-    		System.out.println(n2.getNodeName());
-    		System.exit(0);
-    	}*/
-    	
+
     	String nombrePadre=n2.getParentNode().getNodeName().replaceAll("cac:", "");
     	ArrayList<Tuplas> at=this.tablas.get(nombrePadre);
     	boolean insertado=false;
@@ -104,6 +160,7 @@ public class Datos {
 
     }
     
+    */
     public void imprimirDatos(){
     	//System.out.println("Tamaño: "+this.tablas.size());
 		 for (Entry<String, ArrayList<Tuplas>> c : tablas.entrySet()){

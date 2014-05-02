@@ -83,7 +83,7 @@ public class ExtractorXml {
 	        		}*/
 	        		//d.insertarDato(this.getPadre(nodes.item(i)), this.getColumna(nodes.item(i)), this.getValue(nodes.item(i)));
 	        		/* Obtencion de atributos */
-	        		
+	        		/*
 	        		NamedNodeMap nm =nodes.item(i).getAttributes();
 	        		if(nm.getLength()>0){
 	        			for (int j=0;j<nm.getLength();j++){
@@ -99,7 +99,7 @@ public class ExtractorXml {
 	        				//System.out.println("Para el nodo: " +nodes.item(i).getNodeName().replaceAll("cbc:", "")+"		Atributo "+j+" "+nodes.item(i).getNodeName().replaceAll("cbc:", "")+nm.item(j).getNodeName()+": "+nm.item(j).getTextContent());
 	        			}
 	        		}
-	        		
+	        		*/
 	        		
 	        		/*
 	        		if (nodes.item(i).getNodeName().contains("ActivityCode"))
