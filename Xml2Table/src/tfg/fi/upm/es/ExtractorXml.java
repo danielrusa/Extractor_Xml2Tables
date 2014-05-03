@@ -23,6 +23,7 @@ public class ExtractorXml {
 	private String tablaActual;
 	private Tablas t;
 	private Datos d;
+	public boolean tratable;
 		
 	
 	public ExtractorXml(BaseDatos bd,String id,Tablas t,Datos d) {
@@ -32,28 +33,32 @@ public class ExtractorXml {
 		String[] resultado=bd.obtenerXmlPorId(id);
 		this.tipo=resultado[0];
 		this.xml=resultado[1];
-		this.d=d;
-		this.t=t;
-		//System.out.println(tipo);
-		
-		try {
-			doc = UtilidadesXML.String2Document(xml);
-			NodeList nl=doc.getChildNodes();
-			raiz=nl.item(0).getNodeName().trim();
-			padre=raiz;
-			tablaActual=raiz;
-			path="/"+raiz;
-			System.out.println("Raiz="+raiz);
-			t.crearTabla(raiz);
-			//t.imprimirTablas();
-			d.crearTabla(nl.item(0), this.getHijos(nl.item(0)), path+"/");
-			//d.imprimirDatos();
-			//System.exit(0);
-			posicion=t.getPoscion(raiz);//bd.crearTablaSiNoExiste(raiz,"",0,path,tipo);////////////////////////////////////
-			//System.out.println("posicion="+posicion);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		tratable=(xml.trim()!=null && xml.trim()!="");
+		if (tratable){
+			this.d=d;
+			this.t=t;
+			//System.out.println(tipo);
+
+			try {
+
+				doc = UtilidadesXML.String2Document(xml);
+				NodeList nl=doc.getChildNodes();
+				raiz=nl.item(0).getNodeName().trim();
+				padre=raiz;
+				tablaActual=raiz;
+				path="/"+raiz;
+				//System.out.println("Raiz="+raiz);
+				t.crearTabla(raiz,padre,path,tipo);
+				//t.imprimirTablas();
+				d.crearTabla(nl.item(0), this.getHijos(nl.item(0)), path+"/",id,tipo);
+				//d.imprimirDatos();
+				//System.exit(0);
+				posicion=t.getPoscion(raiz);//bd.crearTablaSiNoExiste(raiz,"",0,path,tipo);////////////////////////////////////
+				//System.out.println("posicion="+posicion);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 
 	}
@@ -70,12 +75,12 @@ public class ExtractorXml {
 	        
 	        for(int i=0;i<nodes.getLength();i++) {
 	        	
-	        	String path=obtenerPath(nodes.item(i)).replaceAll("cbc:(.*?)/","");
+	        	String path=obtenerPath(nodes.item(i)).replaceAll("cbc:(.*?)/","").replaceAll("ext:", "");
 	        	//System.out.println("PPPPAAAAATHHH   "+path);
 	        	if (nodes.item(i).getNodeName().contains("cbc:")) // atributos de la tabla
 	        	{
-	        		t.insertarColumna(this.getPadre(nodes.item(i)), this.getColumna(nodes.item(i)), this.getLongitud(nodes.item(i)));
-	        		d.insertaColumna(nodes.item(i), this.getValue(nodes.item(i)), this.getHijos(nodes.item(i).getParentNode()), path);
+	        		t.insertarColumna(this.getPadre(nodes.item(i)), this.getColumna(nodes.item(i)), this.getLongitud(nodes.item(i)),this.getPadre(nodes.item(i)),path,tipo);
+	        		d.insertaColumna(nodes.item(i), this.getValue(nodes.item(i)), this.getHijos(nodes.item(i).getParentNode()), path,id,tipo);
 	        		//d.imprimirDatos();
 	        		/*if (i==13){
 	        			d.imprimirDatos();
@@ -118,9 +123,9 @@ public class ExtractorXml {
 	        	} else { //(String tabla,String padre,int pos,String path)
 	        		//System.out.println(obtenerPath(nodes.item(i)));
 	        		//System.out.println("Padre: "+nodes.item(i).getNodeName()+"\n\tHijos:  "+this.getHijos(nodes.item(i)));
-	        		t.crearTabla(nodes.item(i).getNodeName().replaceAll("cac:", ""));
+	        		t.crearTabla(nodes.item(i).getNodeName().replaceAll("cac:", "").replaceAll("ext:", ""),this.getPadre(nodes.item(i)),path,tipo);
 	        		//System.out.println("Path--<"+path);
-	        		d.crearTabla(nodes.item(i), this.getHijos(nodes.item(i)), path);
+	        		d.crearTabla(nodes.item(i), this.getHijos(nodes.item(i)), path,id,tipo);
 	        		
 	        		//bd.crearTablaSiNoExiste(nodes.item(i).getNodeName().replaceAll("cac:", ""),nodes.item(i).getParentNode().getNodeName().replaceAll("cac:", ""),posicion,obtenerPath(nodes.item(i)),tipo);
 	        	}
@@ -143,11 +148,15 @@ public class ExtractorXml {
 		}
 		
         //System.out.println(UtilidadesXML.Nodes2String(nodes));
-		d.imprimirDatos();
+		t.ejecutarQuerys();
+		t.vaciarQuerys();
+		d.insertarDatos();
+		
+		
 	}
 	
 	private String getPadre(Node n){
-		return n.getParentNode().getNodeName().replaceAll("cac:", "");
+		return n.getParentNode().getNodeName().replaceAll("cac:", "").replaceAll("ext:", "");
 	}
 	
 	private String getColumna(Node n){
@@ -169,7 +178,7 @@ public class ExtractorXml {
 		else
 			aux=n2.getNodeName();
 			
-		String t=n1.getNodeName().replaceAll("cbc:", "")+"-"+aux;
+		String t=n1.getNodeName().replaceAll("cbc:", "").replaceAll(":cbc", "")+"_"+aux;
 		if (t.length()>63){
 			return t.substring(t.length()-63, t.length());
 		} else {
@@ -181,13 +190,13 @@ public class ExtractorXml {
 		String salida="/";
 		Node nodoAux=node;
 		List<String> padres=new ArrayList<String>();
-		padres.add(nodoAux.getNodeName().replaceAll("cac:", ""));
+		padres.add(nodoAux.getNodeName().replaceAll("cac:", "").replaceAll("ext:", ""));
 		
-		while (nodoAux.getParentNode()!=null && !nodoAux.getParentNode().getNodeName().replaceAll("cac:", "").contains("#document"))
+		while (nodoAux.getParentNode()!=null && !nodoAux.getParentNode().getNodeName().replaceAll("cac:", "").replaceAll("ext:", "").contains("#document"))
 		{
 			nodoAux=nodoAux.getParentNode();
 			//System.out.println("Nodo="+node.getNodeName().replaceAll("cac:", "")+",   Padre"+nodoAux.getNodeName().replaceAll("cac:", ""));
-			padres.add(nodoAux.getNodeName().replaceAll("cac:", ""));
+			padres.add(nodoAux.getNodeName().replaceAll("cac:", "").replaceAll("ext:", ""));
 		}
 		
 		for (int i=padres.size()-1;i>=0;i--){
@@ -203,7 +212,7 @@ public class ExtractorXml {
 		String aux="";
 		for (int i=0;i<nl.getLength();i++){
 			if (!nl.item(i).getNodeName().equals("#text") && nl.item(i).getNodeName().contains("cac") && !aux.contains(nl.item(i).getNodeName().replaceAll("cac:", "")) ){
-				aux=aux+nl.item(i).getNodeName().replaceAll("cac:", "");
+				aux=aux+nl.item(i).getNodeName().replaceAll("cac:", "").replaceAll("ext:", "");
 				if (i!=(nl.getLength()-2)){
 					aux=aux+" | ";
 				}

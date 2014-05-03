@@ -53,7 +53,18 @@ public class BaseDatos {
 		return resultado;
 	}
 	
+	public void ejecutarQuery(String query){
+		try {
+			Statement st = (Statement) miConexion.createStatement();
+			st.execute(query) ;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			System.out.println("Fallo en la ejecucion de la Query:   <"+query+">");
+			e.printStackTrace();
+		}
+	}
 
+	/*
 	
 	public int crearTablaSiNoExiste(String tabla,String padre,int pos,String path,String tipo,String idLicitacion){
 		//System.out.println("Solicitado crear tabla con tablaName="+tabla+",		Padre="+padre+",		Pos="+pos+",   	Path="+path+",		Tipo="+tipo);
@@ -177,17 +188,6 @@ public class BaseDatos {
 		try {
 			st = (Statement) miConexion.createStatement();
 			query = "SELECT IFNULL((select "+columna+" from "+tabla+" where path='"+path+"' and posicion="+id+" limit 1),'ES_NULO')";
-			//"select "+columna+" from "+tabla+" where posicion="+id ;
-			/*
-			if (columna.contains("ActivityCodename")){
-				System.out.println(query);
-			try {
-				Thread.sleep(1);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			}*/
 			ResultSet rs = st.executeQuery(query) ;
 			while (rs.next()){
 				if (!rs.getString(1).contains("ES_NULO"))
@@ -195,18 +195,7 @@ public class BaseDatos {
 				break;
 			}
 			
-			/*rs.next();
-			if (rs!=null && rs.getString(1)!=null){ 
-				valor=valor+", "+rs.getString(1).trim();
-			}*/
-			/*
-			if(rs.getRow()>0){
-				while (rs.next()){
-					if (!rs.getString(1).isEmpty())
-						valor=rs.getString(1).trim();
-					break;
-				}
-			} */
+
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block()
 			System.out.println(query);
@@ -297,4 +286,5 @@ public class BaseDatos {
 		}
 		return aux;
 	}
+	*/
 }
