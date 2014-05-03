@@ -202,8 +202,8 @@ public class Tablas {
 			 if (this.existeColumna(nombre)){
 				 l=col.get(nombre);
 			 } else {
-				 if (nombre.equalsIgnoreCase("Description") || nombre.equalsIgnoreCase("Name")){
-					 l=600;
+				 if (nombre.equalsIgnoreCase("Description") || nombre.equalsIgnoreCase("Name") || nombre.equalsIgnoreCase("Note")){
+					 l=1000;
 					 String query="ALTER TABLE "+tabla+" MODIFY "+nombre+" VARCHAR("+l+")";
 					 modificaciones.add(query);
 				 }

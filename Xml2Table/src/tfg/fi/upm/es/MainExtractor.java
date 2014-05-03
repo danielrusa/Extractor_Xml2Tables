@@ -43,7 +43,7 @@ public class MainExtractor {
 			Double tMed=difT/((i-ini)+1);
 			int tEsperado=(int) (tMed*(fin-i));
 			System.out.println("\n===================================================================================================================================");
-			System.out.println("		Segundos transcurridos entre 2 iteraciones:	["+(t1.getSeconds()-t2.getSeconds())+"]");
+			System.out.println("		Segundos transcurridos entre 2 iteraciones:	["+(t2.getSeconds()-t1.getSeconds())+"]");
 			System.out.println("		Procesada iteracion: ["+i+"],		Iteraciones Restantes:	["+(fin-i)+"],		Porcentaje Completado ["+porcentaje+"]");
 			System.out.println("		Tiempo restante estimado para finalizacion:		"+pasarSegundos(tEsperado));
 			System.out.println("===================================================================================================================================\n");
