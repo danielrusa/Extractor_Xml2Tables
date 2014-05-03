@@ -64,6 +64,25 @@ public class BaseDatos {
 		}
 	}
 
+	public int obtenerNumeroDeLicitacienes(){
+		int resultado=0;
+		try {
+			Statement st = (Statement) miConexionlicitaciones.createStatement();
+			String query = "select max(id) from licitaciones";
+			ResultSet rs = st.executeQuery(query) ;
+
+			while (rs.next()){
+				//System.out.println(rs.getObject(1).toString());
+				resultado=rs.getInt(1);
+				break;
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return resultado;
+	}
 	/*
 	
 	public int crearTablaSiNoExiste(String tabla,String padre,int pos,String path,String tipo,String idLicitacion){
