@@ -20,15 +20,18 @@ public class MainExtractor {
 		// TODO Auto-generated method stub
 		BaseDatos db = new BaseDatos();
 		Tablas t= new Tablas();
-		for (int i=3608;i<3609;i++){
+		for (int i=3608;i<3610;i++){
 		Datos d=new Datos(t);
 		 // bucle de recorrido de licitaciones
 		
-		ExtractorXml ex= new ExtractorXml(db,String.valueOf(i),t,d);
+		ExtractorXml ex= new ExtractorXml(db,String.valueOf(3608),t,d);
 		ex.recorrerNodos();
+		System.out.println("\n\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+		System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+		System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
 		}
 		
-		//t.imprimirTablas();
+		t.imprimirTablas();
 		//d.imprimirDatos();
 	}		
 }

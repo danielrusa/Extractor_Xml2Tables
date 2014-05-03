@@ -24,6 +24,7 @@ public class Datos {
 		int pos=ta.getPoscion(padre); // Capturo posicion de Padre incrementado la anterior
     	if (!tablas.containsKey(tabla)){ // si no existe la tabla
     		Tuplas t= new Tuplas(pos,tabla,padre,hijos,path); // Creo una tupla con los metadatos
+    		
     		ArrayList<Tuplas> at = new  ArrayList<Tuplas>(); // Creo un Array list de Tuplas
     		at.add(t); // inserto tupla creada
     		tablas.put(tabla, at); // Inserto tabla + tupla
@@ -33,7 +34,8 @@ public class Datos {
     		for (int i=0;i<at.size()&&!encontrado;i++)
     		{
     			Tuplas aux=(Tuplas) at.get(i); // Capturo la tupla en la posicion i
-    			if (aux.getPath().equals(path.trim())){ // 
+    			if (aux.getPath().equals(path.trim())){ //
+    				
     				encontrado=true;
     				break;
     			}
@@ -53,9 +55,10 @@ public class Datos {
     	String tabla=n.getParentNode().getNodeName().replaceAll("cac:", "");
     	String nombrePadreTabla=n.getParentNode().getParentNode().getNodeName().replaceAll("cac:", "");
     	ArrayList<Tuplas> at=this.tablas.get(tabla);
-    	boolean insertado=false;
+    	boolean insertado=false;   	
     	for (int i=0;i<at.size()&&!insertado;i++){ // Para todos el array de Tuplas columna,valor
     		Tuplas t=at.get(i);
+    		
     		if (!t.existeColumna(nombreColumna) && t.getPath().trim().equals(path)){ // Si no esta la columna lo añado
     			t.insertarDatoEnColumna(nombreColumna, dato);
     			this.insertarAtributos(t, n);
@@ -64,7 +67,7 @@ public class Datos {
     		}
     	}
     	if (!insertado){ // Si esta en todas Creo nueva tupla y la añado a la lista
-    		Tuplas t=new Tuplas(ta.getPoscion(tabla),tabla,nombrePadreTabla,hijos,path);
+    		Tuplas t=new Tuplas(ta.getPoscion(nombrePadreTabla),tabla,nombrePadreTabla,hijos,path);
     		this.insertarAtributos(t, n);
     		//(int posicion,String tabla, String padre, String hijos, String path)
     		at.add(t);
