@@ -24,19 +24,32 @@ public class Tablas {
 	 }
 	 
 	 public void insertarQueryCreate(String tabla){
-		 String query="CREATE TABLE "+tabla+" (idTabla bigint primary key,padre nvarchar(200),posicion int,hijos nvarchar(400),path nvarchar(800),idLicitacion nvarchar(10),Tipo nvarchar(200), INDEX `posicion_ind` (`posicion`),INDEX `padre_ind` (`padre`),INDEX `idLicitacion_ind` (`idLicitacion`),INDEX `Tipo_ind` (`Tipo`))";
-		 this.creates.put(tabla, query);
+		 if (!this.existeTabla(tabla.toLowerCase())){
+			 String query="CREATE TABLE "+tabla+" (idTabla bigint primary key,padre nvarchar(200),posicion int,hijos nvarchar(400),path nvarchar(800),idLicitacion nvarchar(10),Tipo nvarchar(200), INDEX `posicion_ind` (`posicion`),INDEX `padre_ind` (`padre`),INDEX `idLicitacion_ind` (`idLicitacion`),INDEX `Tipo_ind` (`Tipo`))";
+			 this.creates.put(tabla.toLowerCase(), query);
+		 }
 	 }
 	 
 	 public void insertarColumnaQueryAlter(String tabla,String columna,int longitud){
-		 if (!alter.containsKey(tabla)){
-			 HashMap<String,Integer> col = new HashMap<String,Integer>(); // Creo estructura Map tipo columna-longitud
-			 col.put(columna, longitud); // Inserto los valores
-			 alter.put(tabla, col); // Inserto la estructura
-		 } else { // Si ya existia la tabla
-			 HashMap<String,Integer> col=alter.get(tabla); // Obtengo la estructura
-			 col.put(columna, longitud); // Inserto los valores
-			 alter.put(tabla, col); // Inserto la estructura
+		 if (!this.existeColumnaEnTabla(tabla.toLowerCase(), columna)){
+			 if (!alter.containsKey(tabla.toLowerCase())){
+				 HashMap<String,Integer> col = new HashMap<String,Integer>(); // Creo estructura Map tipo columna-longitud
+				 col.put(columna, longitud); // Inserto los valores
+				 alter.put(tabla.toLowerCase(), col); // Inserto la estructura
+			 } else { // Si ya existia la tabla
+				 HashMap<String,Integer> col=alter.get(tabla.toLowerCase()); // Obtengo la estructura
+				 col.put(columna, longitud); // Inserto los valores
+				 alter.put(tabla.toLowerCase(), col); // Inserto la estructura
+			 }
+		 }
+	 }
+	 
+	 public void imprimirMetadatos(){
+		 for (Entry<String, Metadatos> c : metadatos.entrySet()){
+			 String clave=c.getKey();
+			 Metadatos m=c.getValue();
+			 System.out.println("ClaveMetadatos: ["+clave+"]");
+			 System.out.println("\t"+m.toString());
 		 }
 	 }
 	 
@@ -69,13 +82,13 @@ public class Tablas {
 	 }
 	 
 	 public boolean existeTabla(String nombre){
-		 return tablas.containsKey(nombre);
+		 return tablas.containsKey(nombre.toLowerCase());
 	 }
 	 
 	 public void crearTabla(String nombre,String padre,String path,String tipo){
-		 if (!this.existeTabla(nombre)){
+		 if (!this.existeTabla(nombre.toLowerCase())){
 			 Columnas col= new Columnas();
-			 tablas.put(nombre, col);
+			 tablas.put(nombre.toLowerCase(), col);
 			 this.insertarQueryCreate(nombre);
 
 		 }
@@ -84,44 +97,55 @@ public class Tablas {
 			 Metadatos m = new Metadatos(nombre, padre, path, tipo);
 			 metadatos.put(path.trim()+tipo.trim(), m);
 		 }
+		 /*
+		 if (!this.existeTabla(nombre)){
+		 System.out.println(("¿Existe tabla "+nombre+"?  "+this.existeTabla(nombre)));
+		 System.exit(0);
+		 }
+		 */
 	 }
 	 
-	 public void insertarColumna(String tabla,String columna,int longitud,String padre,String path,String tipo){
-		 if (!this.existeTabla(tabla)){
-			 this.crearTabla(tabla,padre,path,tipo);
-			 this.insertarQueryCreate(tabla);
+	 
+	 public Columnas crearColumnasBBDD(String tabla){
+			 return new Columnas();
 		 }
-		 Columnas c=this.tablas.get(tabla);
-		 boolean existe=this.existeColumnaEnTabla(tabla, columna);		
-		 int l=c.insertarColumna(columna, longitud,tabla);
+	 
+	 public void insertarColumna(String tabla,String columna,int longitud,String padre,String path,String tipo){
+		 if (!this.existeTabla(tabla.toLowerCase())){
+			 this.crearTabla(tabla.toLowerCase(),padre,path,tipo);
+			 this.insertarQueryCreate(tabla.toLowerCase());
+		 }
+		 Columnas c=this.tablas.get(tabla.toLowerCase());
+		 boolean existe=this.existeColumnaEnTabla(tabla.toLowerCase(), columna);		
+		 int l=c.insertarColumna(columna, longitud,tabla.toLowerCase());////////////////////////////////
 		 if (!existe)
-			 	this.insertarColumnaQueryAlter(tabla, columna, l);
+			 	this.insertarColumnaQueryAlter(tabla.toLowerCase(), columna, l);
  
 	 }
 	 
 
 	 public boolean existeColumnaEnTabla(String tabla,String columna){
-		 Columnas c=tablas.get(tabla);
+		 Columnas c=tablas.get(tabla.toLowerCase());
 		 return c.existeColumna(columna);
 	 }
 	 
 	 public int obtenerLongitudColumna(String tabla,String columna){
-		 Columnas c=tablas.get(tabla);
+		 Columnas c=tablas.get(tabla.toLowerCase());
 		 return c.obtenerLongitudColumna(columna);
 	 }
 	 /// No usar
 	 public void CambiarLongitudColumna(String tabla,String columna,int longitud){
-		 Columnas c=tablas.get(tabla);
+		 Columnas c=tablas.get(tabla.toLowerCase());
 		 c.setLongitudColumna(columna, longitud);
-		 String query="ALTER TABLE "+tabla+" MODIFY "+columna+" VARCHAR("+longitud+")";
+		 String query="ALTER TABLE "+tabla.toLowerCase()+" MODIFY "+columna+" VARCHAR("+longitud+")";
 		 bd.ejecutarQuery(query);
 		 System.out.println("Ejecutada query: "+query);
 	 }
 	 
 	 
 	 public int getPoscion(String tabla){
-		 if (this.existeTabla(tabla)){
-			 Columnas c=this.tablas.get(tabla);
+		 if (this.existeTabla(tabla.toLowerCase())){
+			 Columnas c=this.tablas.get(tabla.toLowerCase());
 			 //System.out.println(tabla);
 			 return c.getId();
 		 } else
@@ -133,17 +157,17 @@ public class Tablas {
 		 /*if (!tabla.equals("#document")){
 		 System.out.println(tabla);System.out.println(this.existeTabla(tabla));System.out.println(this.getPoscion(tabla));
 		 System.exit(0);}*/
-		 if (this.existeTabla(tabla) && !tabla.equals("#document")){
+		 if (this.existeTabla(tabla.toLowerCase()) && !tabla.toLowerCase().equals("#document")){
 			 //System.out.println("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff        "+tabla);
-			 Columnas c=this.tablas.get(tabla);
+			 Columnas c=this.tablas.get(tabla.toLowerCase());
 			 return c.incrementaId();
 		 } else
 			 return 0;
 	 }
 	 
 	 public int decrementaId(String tabla){
-		 if (!this.existeTabla(tabla)){
-			 Columnas c=this.tablas.get(tabla);
+		 if (!this.existeTabla(tabla.toLowerCase())){
+			 Columnas c=this.tablas.get(tabla.toLowerCase());
 			 return c.decrementaId();
 		 } else
 			 return -1;
@@ -157,8 +181,6 @@ public class Tablas {
 		 }
 
 	 }
-	 
-
 	 
 	 public class Columnas {
 		 int id;
@@ -203,15 +225,18 @@ public class Tablas {
 				 l=col.get(nombre);
 			 } else {
 				 if (nombre.equalsIgnoreCase("Description") || nombre.equalsIgnoreCase("Name") || nombre.equalsIgnoreCase("Note")){
-					 l=1000;
-					 String query="ALTER TABLE "+tabla+" MODIFY "+nombre+" VARCHAR("+l+")";
-					 modificaciones.add(query);
+						 l=1000;
+						 if ((longitud<l)){
+							 String query="ALTER TABLE "+tabla.toLowerCase()+" MODIFY "+nombre+" VARCHAR("+l+")";
+							 modificaciones.add(query);
+
+						 }
 				 }
 				 else
 					 l=200;
 			 }
-			 if (longitud>l){
-				 l=longitud*2;
+			 if (longitud>l && longitud < 1000){
+				 l=1000;
 				 String query="ALTER TABLE "+tabla+" MODIFY "+nombre+" VARCHAR("+l+")";
 				 modificaciones.add(query);
 			 }
@@ -245,6 +270,25 @@ public class Tablas {
 			this.nivel = (this.contar(path,'/')-1);
 			bd.ejecutarQuery("INSERT INTO TABLAS(TABLA,PADRE,PATH,NIVEL,TIPO) VALUES ('"+this.tabla+"','"+this.padre+"','"+this.path+"',"+this.nivel+",'"+this.tipo+"')");
 		}
+
+		public Metadatos(String tabla, String padre, String path, String tipo,int nivel) {
+			super();
+			
+			this.tabla = tabla;
+			this.padre = padre;
+			this.path = path;
+			this.tipo = tipo;
+			this.nivel = nivel;
+		}
+
+		
+		@Override
+		public String toString() {
+			return "Metadatos [tabla=" + tabla + ", padre=" + padre + ", path="
+					+ path + ", tipo=" + tipo + ", nivel=" + nivel + "]";
+		}
+
+
 
 		public int contar(String cadena, char caracter){
 			int aux=0;

@@ -123,10 +123,11 @@ public class ExtractorXml {
 	        	} else { //(String tabla,String padre,int pos,String path)
 	        		//System.out.println(obtenerPath(nodes.item(i)));
 	        		//System.out.println("Padre: "+nodes.item(i).getNodeName()+"\n\tHijos:  "+this.getHijos(nodes.item(i)));
-	        		t.crearTabla(nodes.item(i).getNodeName().replaceAll("cac:", "").replaceAll("ext:", ""),this.getPadre(nodes.item(i)),path,tipo);
+	        		t.crearTabla(nodes.item(i).getNodeName().replaceAll("cac:", "").replaceAll("ext:", "").toLowerCase(),this.getPadre(nodes.item(i)).toLowerCase(),path,tipo);
 	        		//System.out.println("Path--<"+path);
 	        		d.crearTabla(nodes.item(i), this.getHijos(nodes.item(i)), path,id,tipo);
-	        		
+	        		// contractawardnotice
+	        		// ContractAwardNotice
 	        		//bd.crearTablaSiNoExiste(nodes.item(i).getNodeName().replaceAll("cac:", ""),nodes.item(i).getParentNode().getNodeName().replaceAll("cac:", ""),posicion,obtenerPath(nodes.item(i)),tipo);
 	        	}
 	        	
@@ -156,7 +157,7 @@ public class ExtractorXml {
 	}
 	
 	private String getPadre(Node n){
-		return n.getParentNode().getNodeName().replaceAll("cac:", "").replaceAll("ext:", "");
+		return n.getParentNode().getNodeName().replaceAll("cac:", "").replaceAll("ext:", "").toLowerCase();
 	}
 	
 	private String getColumna(Node n){
@@ -182,7 +183,7 @@ public class ExtractorXml {
 		if (t.length()>63){
 			return t.substring(t.length()-63, t.length());
 		} else {
-			return t;
+			return t.toLowerCase();
 		}
 	}
 	

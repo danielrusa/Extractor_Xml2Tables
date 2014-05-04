@@ -5,6 +5,12 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map.Entry;
+
+import tfg.fi.upm.es.Tablas.Columnas;
+import tfg.fi.upm.es.Tablas.Metadatos;
 
 
 
@@ -46,6 +52,8 @@ public class BaseDatos {
 				resultado[0]=(String) rs.getObject(1);
 				resultado[1]=(String) rs.getObject(2);
 			}
+			rs.close();
+			st.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -57,6 +65,7 @@ public class BaseDatos {
 		try {
 			Statement st = (Statement) miConexion.createStatement();
 			st.execute(query) ;
+			st.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			System.out.println("Fallo en la ejecucion de la Query:   <"+query+">");
@@ -76,12 +85,184 @@ public class BaseDatos {
 				resultado=rs.getInt(1);
 				break;
 			}
+			rs.close();
+			st.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
 		return resultado;
+	}
+	
+	
+	public void obtenerEstructuraTablas(Tablas t){
+
+		
+		HashMap<String,Integer> id=this.obtenerEstructuraMaxIdTablas();
+		
+		 for (Entry<String, Integer> c : id.entrySet()){
+			 String tabla=c.getKey();
+			 int idTabla=c.getValue();
+			 /*
+				if (tabla.equals("contractawardnotice")){
+					System.out.println(idTabla);
+					System.exit(0);
+				}
+				*/
+			 
+			 String query="SELECT information_schema.COLUMNS.column_name,information_schema.COLUMNS.character_maximum_length FROM information_schema.columns WHERE table_schema = 'licitaciones' AND table_name  LIKE '"+tabla+"';";
+			 
+			 try {
+				 
+				Statement st = (Statement) miConexion.createStatement();
+				ResultSet rs = st.executeQuery(query) ;
+				Columnas col=t.crearColumnasBBDD(tabla); // Recupero Estructura columna
+				col.id=idTabla;
+				while (rs.next()){ // Para todas las columnas de tabla
+
+					String columna=rs.getString(1); // Nombre Columna
+					if (!columna.equals("idTabla") && !columna.equals("padre") && !columna.equals("posicion") && !columna.equals("hijos") && !columna.equals("path") && !columna.equals("idLicitacion") && !columna.equals("Tipo")){
+						int longitud=rs.getInt(2); // Longitud
+						col.col.put(columna, longitud); //Inserto valor
+						col.id=id.get(tabla);
+					}
+					
+				}
+				t.tablas.put(tabla, col);
+
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		 }
+
+	}
+	
+	
+	public HashMap<String,Integer> obtenerEstructuraMaxIdTablas(){
+		HashMap<String,Integer> maxId=new HashMap<String,Integer>();
+		String query="select table_name from information_schema.tables WHERE table_schema = 'licitaciones' AND table_name not LIKE 'tablas'";
+		try {
+			Statement st = (Statement) miConexion.createStatement();
+			ResultSet rs = st.executeQuery(query) ;
+			while (rs.next()){
+				String tabla=rs.getString(1);
+				//System.out.println(columna);
+				//String q2="select max(idTabla) from "+rs.getObject(1).toString();
+				//ResultSet rs2 = st.executeQuery(q2) ;
+				maxId.put(tabla, obtenerMaxIdPorTabla(tabla));
+			}
+
+			rs.close();
+			st.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return maxId;
+	}
+	
+	
+	public int obtenerMaxIdPorTabla(String tabla){
+		int id = 0;
+		try {
+			Statement st = (Statement) miConexion.createStatement();
+			String q2="select max(idTabla) from licitaciones."+tabla;
+			
+
+			
+			//System.out.println(q2);
+			ResultSet rs = st.executeQuery(q2);
+			while (rs.next()){
+				id= rs.getInt(1);
+			}
+			rs.close();
+			st.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			id=0;
+		}
+		
+		return id;
+	}
+	
+	public void cargarMatedatos(Tablas t){
+		//t.metadatos.put(key, value)
+		String query="select id,tabla,padre,path,abs(nivel),tipo from tablas";
+		
+		try {
+			Statement st = (Statement) miConexion.createStatement();
+			ResultSet rs = st.executeQuery(query);
+			while (rs.next()){
+				String tabla=rs.getString(2);
+				String padre=rs.getString(3);
+				String path=rs.getString(4);
+				int nivel=rs.getInt(5);
+				String tipo=rs.getString(6);
+				Metadatos m=t.new Metadatos(tabla, padre, path, tipo,nivel);
+				t.metadatos.put(path.trim()+tipo.trim(), m);
+
+			}
+			rs.close();
+			st.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//Metadatos m=t.new Metadatos(null, null, null, null);
+	}
+	
+	
+	public void cargarEstructuras(Tablas t){
+		this.obtenerEstructuraTablas(t);
+		this.cargarMatedatos(t);
+	}
+	
+	public int maximoIdLicitacionProcesado(){
+		int res=0;
+		ArrayList<String> tablas=getTablas();
+		
+		for (int i=0;i<tablas.size();i++){
+			String query="SELECT max(CAST(idLicitacion AS UNSIGNED)) FROM "+tablas.get(i);
+			try {
+				Statement st = (Statement) miConexion.createStatement();
+				ResultSet rs = st.executeQuery(query);
+				while (rs.next()){
+					if (rs.getInt(1)>res)
+						res=rs.getInt(1);
+				}
+				rs.close();
+				st.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return res;
+	}
+	
+	public ArrayList<String> getTablas(){
+		ArrayList<String> tablas= new ArrayList<String>();
+		
+		String query="select table_name from information_schema.tables WHERE table_schema = 'licitaciones' AND table_name not LIKE 'tablas'";
+		
+		try {
+			Statement st = (Statement) miConexion.createStatement();
+			ResultSet rs = st.executeQuery(query);
+			while (rs.next()){
+				tablas.add(rs.getString(1));
+			}
+			rs.close();
+			st.close();
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return tablas;
+		
 	}
 	/*
 	

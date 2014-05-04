@@ -26,9 +26,25 @@ public class MainExtractor {
 		// TODO Auto-generated method stub
 		BaseDatos db = new BaseDatos();
 		Tablas t= new Tablas(db);
+		System.out.println("Cargando estructuras....................................................................");
+		db.obtenerEstructuraTablas(t);
+		System.out.println("....Estructura Tablas cargada............................................................");
+		//t.imprimirTablas();
+		db.cargarMatedatos(t);
+		System.out.println("....Estructura Metadatos cargada.........................................................");
+		//t.imprimirMetadatos();
+		int ini=db.maximoIdLicitacionProcesado()+1;
+		System.out.println("Primera licitacion a procesar: "+ini);
 		int fin=db.obtenerNumeroDeLicitacienes();
-		int ini=1;
 		Date ti=new Date();
+		//RealizedLocation
+		//contract
+		System.out.println(t.existeTabla("contract"));
+		System.out.println("Tablas cargadas en estructura Tablas ["+t.tablas.size()+"]");
+		t.imprimirTablas();
+		t.imprimirMetadatos();
+		//System.exit(0);
+		//t.imprimirTablas();
 		for (int i=ini;i<=fin;i++){
 			System.out.println("\n<<<<<<<<<<		Licitacion Nº ["+i+"]			>>>>>>>>>>");
 			Datos d=new Datos(t,db);
@@ -39,11 +55,11 @@ public class MainExtractor {
 				ex.recorrerNodos();
 			Date t2= new Date();
 			Double porcentaje=(double)((i*100.0)/(fin*1.0));
-			Double difT=(double) (t2.getSeconds()-ti.getSeconds());
+			Double difT=(double) ((t2.getTime()-ti.getTime())/1000);
 			Double tMed=difT/((i-ini)+1);
 			int tEsperado=(int) (tMed*(fin-i));
 			System.out.println("\n===================================================================================================================================");
-			System.out.println("		Segundos transcurridos entre 2 iteraciones:	["+(t2.getSeconds()-t1.getSeconds())+"]");
+			System.out.println("		Segundos transcurridos entre 2 iteraciones:	["+(double) ((t2.getTime()-t1.getTime())/1000)+"]");
 			System.out.println("		Procesada iteracion: ["+i+"],		Iteraciones Restantes:	["+(fin-i)+"],		Porcentaje Completado ["+porcentaje+"]");
 			System.out.println("		Tiempo restante estimado para finalizacion:		"+pasarSegundos(tEsperado));
 			System.out.println("===================================================================================================================================\n");

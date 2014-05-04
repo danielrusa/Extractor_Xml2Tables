@@ -24,17 +24,17 @@ public class Datos {
 	
     
     public void crearTabla(Node n,String hijos,String path,String idLicitacion,String tipo){
-    	String tabla=n.getNodeName().replaceAll("cac:", "").replaceAll("ext:", "");
+    	String tabla=n.getNodeName().replaceAll("cac:", "").replaceAll("ext:", "").toLowerCase();
 		String padre=n.getParentNode().getNodeName().replaceAll("cac:", "").replaceAll("ext:", ""); // capturo padre
 		int pos=ta.getPoscion(padre); // Capturo posicion de Padre incrementado la anterior
-    	if (!tablas.containsKey(tabla)){ // si no existe la tabla
-    		Tuplas t= new Tuplas(pos,tabla,padre,hijos,path,idLicitacion,tipo); // Creo una tupla con los metadatos
+    	if (!tablas.containsKey(tabla.toLowerCase())){ // si no existe la tabla
+    		Tuplas t= new Tuplas(pos,tabla.toLowerCase(),padre,hijos,path,idLicitacion,tipo); // Creo una tupla con los metadatos
     		
     		ArrayList<Tuplas> at = new  ArrayList<Tuplas>(); // Creo un Array list de Tuplas
     		at.add(t); // inserto tupla creada
-    		tablas.put(tabla, at); // Inserto tabla + tupla
+    		tablas.put(tabla.toLowerCase(), at); // Inserto tabla + tupla
     	} else { // Si existe la tabla
-    		ArrayList at=this.tablas.get(tabla); // Capturo las estructuras asociadas a esta tabla
+    		ArrayList at=this.tablas.get(tabla.toLowerCase()); // Capturo las estructuras asociadas a esta tabla
     		boolean encontrado=false;  // aviso de encontrar el mismo path (Misma herencia)
     		for (int i=0;i<at.size()&&!encontrado;i++)
     		{
@@ -46,7 +46,7 @@ public class Datos {
     			}
     		}
     		if (!encontrado){  // si no la encontre es que es nuevo, (distinto path, distinta hubicacion, nueva tupla)
-        		Tuplas t= new Tuplas(pos,tabla,padre,hijos,path,idLicitacion,tipo); // Creo una tupla con los metadatos
+        		Tuplas t= new Tuplas(pos,tabla.toLowerCase(),padre,hijos,path,idLicitacion,tipo); // Creo una tupla con los metadatos
     			at.add(t);  // La añado en la lista
     		} else {
     			//ta.decrementaId(tabla);
@@ -57,22 +57,27 @@ public class Datos {
 
     public void insertaColumna(Node n,String dato,String hijos,String path,String idLicitacion,String tipo){
     	String nombreColumna=n.getNodeName().replaceAll("cbc:", "").replaceAll(":cbc", ""); // Nombre de columna
-    	String tabla=n.getParentNode().getNodeName().replaceAll("cac:", "").replaceAll("ext:", "");
+    	String tabla=n.getParentNode().getNodeName().replaceAll("cac:", "").replaceAll("ext:", "").toLowerCase();
     	String nombrePadreTabla=n.getParentNode().getParentNode().getNodeName().replaceAll("cac:", "").replaceAll("ext:", "");
-    	ArrayList<Tuplas> at=this.tablas.get(tabla);
+    	ArrayList<Tuplas> at=this.tablas.get(tabla.toLowerCase());
     	boolean insertado=false;   	
     	for (int i=0;i<at.size()&&!insertado;i++){ // Para todos el array de Tuplas columna,valor
     		Tuplas t=at.get(i);
     		
     		if (!t.existeColumna(nombreColumna) && t.getPath().trim().equals(path)){ // Si no esta la columna lo añado
-    			t.insertarDatoEnColumna(nombreColumna, dato);
+    			String d;
+    			if (dato.length()>=1000)
+    				d=dato.substring(0, 999);
+    			else
+    				d=dato;
+    			t.insertarDatoEnColumna(nombreColumna, d);
     			this.insertarAtributos(t, n,path,tipo);
     			insertado=true;
     			break;
     		}
     	}
     	if (!insertado){ // Si esta en todas Creo nueva tupla y la añado a la lista
-    		Tuplas t=new Tuplas(ta.getPoscion(nombrePadreTabla),tabla,nombrePadreTabla,hijos,path,idLicitacion,tipo);
+    		Tuplas t=new Tuplas(ta.getPoscion(nombrePadreTabla),tabla.toLowerCase(),nombrePadreTabla,hijos,path,idLicitacion,tipo);
     		this.insertarAtributos(t, n,path,tipo);
     		//(int posicion,String tabla, String padre, String hijos, String path)
     		at.add(t);
@@ -85,10 +90,26 @@ public class Datos {
 		if(nm.getLength()>0){
 			for (int j=0;j<nm.getLength();j++){
 				ta.insertarColumna(this.getPadre(n), this.getNombreAtributo(n, nm.item(j)), this.getLongitud(nm.item(j)),nombrePadreTabla,path,tipo);
-				if (nm.item(j).getNodeName().equals("schemeName"))
-					t.insertarDatoEnColumna(this.getNombreAtributo(n, nm.item(j)), n.getTextContent());
-				else
-					t.insertarDatoEnColumna(this.getNombreAtributo(n, nm.item(j)), nm.item(j).getTextContent());
+				
+				
+				if (nm.item(j).getNodeName().equals("schemeName")){
+	    			String d,dato;
+	    			dato=n.getTextContent();
+	    			if (dato.length()>=1000)
+	    				d=dato.substring(0, 999);
+	    			else
+	    				d=dato;
+					t.insertarDatoEnColumna(this.getNombreAtributo(n, nm.item(j)), d);
+				}
+				else{
+	    			String d,dato;
+	    			dato=nm.item(j).getTextContent();
+	    			if (dato.length()>=1000)
+	    				d=dato.substring(0, 999);
+	    			else
+	    				d=dato;
+					t.insertarDatoEnColumna(this.getNombreAtributo(n, nm.item(j)), d);
+				}
 			}
 		}
     }
@@ -149,13 +170,13 @@ public class Datos {
 		
 		public Tuplas(int posicion,String tabla, String padre, String hijos, String path,String idLicitacion,String tipo) { // el constructor rellena Metadatos
 			super();
-			this.id=ta.incrementaPoscion(tabla); // Incremento la posicion de la tabla y creo tubla con id
+			this.id=ta.incrementaPoscion(tabla.toLowerCase()); // Incremento la posicion de la tabla y creo tubla con id
 			this.posicion = posicion;
 			this.padre = padre;
 			this.hijos = hijos;
 			this.path = path;
 			this.idLicitacion=idLicitacion;
-			this.tabla=tabla;
+			this.tabla=tabla.toLowerCase();
 			this.tipo=tipo;
 			insercion = new HashMap<String,String>(); // Columna-valor
 		}
