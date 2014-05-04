@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.StringTokenizer;
 import java.util.Map.Entry;
 
 import tfg.fi.upm.es.Tablas.Columnas;
@@ -21,6 +22,7 @@ public class BaseDatos {
 	Connection miConexionlicitaciones;
 	int id=0;
 	int nivel=1;
+	Tablas tablas;
 
 	public BaseDatos() {
 		super();
@@ -41,6 +43,10 @@ public class BaseDatos {
 		
 	}  // fin constructor
 
+	public void setTablas(Tablas t){
+		this.tablas=t;
+	}
+	
 	public  String[] obtenerXmlPorId(String id){
 		String[] resultado= new String[2];
 		try {
@@ -70,9 +76,153 @@ public class BaseDatos {
 			// TODO Auto-generated catch block
 			System.out.println("Fallo en la ejecucion de la Query:   <"+query+">");
 			e.printStackTrace();
+			
 		}
 	}
+	
+	public void ejecutarQueryModify(String query){
+		try {
+			Statement st = (Statement) miConexion.createStatement();
+			st.execute(query) ;
 
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			String tabla=query.substring(query.indexOf("TABLE"), query.indexOf("MODIFY")).replaceAll("NTO ", "").replaceAll("TABLE", "").trim();
+			if(!comprobarExisteTabla(tabla))
+			{
+				this.crearTablaBBDD(tabla);
+			}
+			
+			String q=query.toLowerCase().replaceAll("modify", "add");
+
+			try {
+				Statement st2 = (Statement) miConexion.createStatement();
+				st2.execute(q) ;
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				System.out.println("Fallo en la ejecucion de la Query:   <"+query+">");
+				e1.printStackTrace();
+			}
+			
+			
+		}
+	}
+	
+	public void crearTablaBBDD(String tabla){
+		String query="CREATE TABLE "+tabla+" (idTabla bigint primary key,padre nvarchar(200),posicion int,hijos nvarchar(400),path nvarchar(800),idLicitacion nvarchar(10),Tipo nvarchar(200), INDEX `posicion_ind` (`posicion`),INDEX `padre_ind` (`padre`),INDEX `idLicitacion_ind` (`idLicitacion`),INDEX `Tipo_ind` (`Tipo`))";
+		Statement st;
+		try {
+			st = (Statement) miConexion.createStatement();
+			st.execute(query) ;
+		} catch (SQLException e) {
+			System.out.println("xxxxxxxxxxxxxxxx  Fallo en la RE-creacion de la tabla "+tabla+"    query <"+query+">");
+			e.printStackTrace();
+		}
+
+	}
+	
+	public boolean comprobarExisteTabla(String tabla){
+		String q="select count(table_name) from information_schema.tables WHERE table_schema = 'licitaciones' AND table_name like '"+tabla+"'";
+		int res=0;
+		try {
+			Statement stcet = (Statement) miConexion.createStatement();
+			ResultSet rs = stcet.executeQuery(q);
+			while (rs.next()){
+				res=rs.getInt(1);
+				break;
+			}
+			
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return (res>0);
+	}
+	
+	public void ejecutarQueryInsert(String query){
+		try {
+			Statement st = (Statement) miConexion.createStatement();
+			st.execute(query) ;
+			st.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			
+			ArrayList<String> lista = this.extraerCadenaColumnas(query);
+			String tabla =this.extraerTabla(query);
+			
+			for (int i=0;i<lista.size();i++){
+				String columna=lista.get(i);
+				if (!this.estaColumnaEnTabla(tabla, columna)){
+					String q2="ALTER TABLE "+tabla.toLowerCase()+" ADD "+columna+" VARCHAR(600)";
+					try {
+						Statement st2 = (Statement) miConexion.createStatement();
+						st2.execute(q2) ;
+						
+					} catch (SQLException e1) {
+						// TODO Auto-generated catch block
+						System.out.println("+++++++++++++++Fallo en la ejecucion de la Query de Alter tras fallo en insert :   <"+query+">");
+						e1.printStackTrace();
+					}
+				}
+			}
+			
+			try {
+				System.out.println("Fallo en la ejecucion de la Query:   <"+query+">          ------------------		Se reintentara.........");
+				Statement st3 = (Statement) miConexion.createStatement();
+				st3.execute(query) ;
+				System.out.println("Re-Ejecutada con exito");
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				System.out.println("Fallo en el reintento de la query <"+query+">");
+				e1.printStackTrace();
+			}
+
+			
+
+			
+		}
+	}
+	
+	
+	public boolean estaColumnaEnTabla(String tabla,String columna){
+		String query="SELECT COUNT(information_schema.COLUMNS.COLUMN_NAME) FROM information_schema.columns"
+				+ " where information_schema.COLUMNS.TABLE_NAME='"+tabla+"' AND information_schema.COLUMNS.COLUMN_NAME LIKE '"+columna+"'";
+		Statement st;
+		int resultado=0;
+		try {
+			st = (Statement) miConexionlicitaciones.createStatement();
+			ResultSet rs = st.executeQuery(query) ;
+
+			while (rs.next()){
+				resultado=rs.getInt(1);
+			}
+			rs.close();
+			st.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return (resultado>0);
+
+	}
+	
+	public String extraerTabla(String q){
+		return q.substring(q.indexOf("INTO")+1, q.indexOf("(")).replaceAll("NTO ", "").trim();
+	}
+
+	public ArrayList<String> extraerCadenaColumnas(String q){
+		String cad=q.substring(q.indexOf("(")+1, q.indexOf(")"));
+		ArrayList<String> lista = new ArrayList<String>();
+		
+		StringTokenizer st = new StringTokenizer(cad,",");
+	    while (st.hasMoreTokens())
+	    	lista.add(st.nextToken());
+	    return lista;
+	    
+	}
+	
+	
 	public int obtenerNumeroDeLicitacienes(){
 		int resultado=0;
 		try {

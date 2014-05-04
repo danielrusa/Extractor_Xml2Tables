@@ -33,7 +33,7 @@ public class ExtractorXml {
 		String[] resultado=bd.obtenerXmlPorId(id);
 		this.tipo=resultado[0];
 		this.xml=resultado[1];
-		tratable=(xml.trim()!=null && xml.trim()!="");
+		tratable=(xml.trim()!=null && xml.trim()!="" && !xml.contains("<!--/*"));
 		if (tratable){
 			this.d=d;
 			this.t=t;

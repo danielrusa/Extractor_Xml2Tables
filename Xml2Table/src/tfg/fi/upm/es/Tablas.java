@@ -44,6 +44,8 @@ public class Tablas {
 		 }
 	 }
 	 
+	 
+	 
 	 public void imprimirMetadatos(){
 		 for (Entry<String, Metadatos> c : metadatos.entrySet()){
 			 String clave=c.getKey();
@@ -58,7 +60,7 @@ public class Tablas {
 		 //System.out.println(alter.size());
 		 for (Entry<String, String> c : creates.entrySet()){
 			 //System.out.println("Query tipo Create:   "+c.getValue());
-			 bd.ejecutarQuery(c.getValue());
+			 bd.ejecutarQueryInsert(c.getValue());
 			 }
 		 
 		 for (Entry<String, HashMap<String,Integer>> c : alter.entrySet()){
@@ -77,7 +79,7 @@ public class Tablas {
 		 
 		 for (int i=0;i<modificaciones.size();i++){
 			 String query=modificaciones.get(i);
-			 bd.ejecutarQuery(query);
+			 bd.ejecutarQueryModify(query);
 		 }
 	 }
 	 
@@ -111,7 +113,7 @@ public class Tablas {
 		 }
 	 
 	 public void insertarColumna(String tabla,String columna,int longitud,String padre,String path,String tipo){
-		 if (!this.existeTabla(tabla.toLowerCase())){
+		 if (!this.existeTabla(tabla.toLowerCase())){ // si no existe tabla la creo
 			 this.crearTabla(tabla.toLowerCase(),padre,path,tipo);
 			 this.insertarQueryCreate(tabla.toLowerCase());
 		 }

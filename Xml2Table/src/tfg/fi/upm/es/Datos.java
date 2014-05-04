@@ -64,7 +64,7 @@ public class Datos {
     	for (int i=0;i<at.size()&&!insertado;i++){ // Para todos el array de Tuplas columna,valor
     		Tuplas t=at.get(i);
     		
-    		if (!t.existeColumna(nombreColumna) && t.getPath().trim().equals(path)){ // Si no esta la columna lo añado
+    		if (!t.existeColumna(nombreColumna) /*&& t.getPath().trim().equals(path)*/){ // Si no esta la columna lo añado
     			String d;
     			if (dato.length()>=1000)
     				d=dato.substring(0, 999);
@@ -158,7 +158,7 @@ public class Datos {
 			 for (int i=0;i<at.size();i++){
 				 String query="INSERT INTO "+c.getKey();
 				 query=query+" ("+at.get(i).obtenerColumnas()+") VALUES ("+at.get(i).obtenerDatos()+")";
-				 bd.ejecutarQuery(query);
+				 bd.ejecutarQueryInsert(query);
 			 }
 		 }
     }
@@ -208,8 +208,10 @@ public class Datos {
 		private String obtenerColumnas(){
 			String columnas="idTabla,padre,posicion,hijos,path,idLicitacion,tipo";
 			
-			 for (Entry<String, String> c : insercion.entrySet())
+			 for (Entry<String, String> c : insercion.entrySet()){//////////////////////////////////////////////////////////////////////////////////////////////
+				 String col=c.getKey();
 				 columnas=columnas+","+c.getKey();
+			 }
 			 return columnas;
 			
 		}
