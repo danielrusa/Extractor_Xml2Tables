@@ -154,7 +154,7 @@ public class BaseDatos {
 			for (int i=0;i<lista.size();i++){
 				String columna=lista.get(i);
 				if (!this.estaColumnaEnTabla(tabla, columna)){
-					String q2="ALTER TABLE "+tabla.toLowerCase()+" ADD "+columna+" VARCHAR(600)";
+					String q2="ALTER TABLE "+tabla.toLowerCase()+" ADD "+columna+" VARCHAR(200)";
 					try {
 						Statement st2 = (Statement) miConexion.createStatement();
 						st2.execute(q2) ;
@@ -162,6 +162,7 @@ public class BaseDatos {
 					} catch (SQLException e1) {
 						// TODO Auto-generated catch block
 						System.out.println("+++++++++++++++Fallo en la ejecucion de la Query de Alter tras fallo en insert :   <"+query+">");
+						System.out.println("+++++++++++++++Intentada Accion  :   <"+q2+">");
 						e1.printStackTrace();
 					}
 				}

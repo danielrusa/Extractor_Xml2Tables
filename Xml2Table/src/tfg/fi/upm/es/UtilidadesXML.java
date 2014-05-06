@@ -2,12 +2,14 @@ package tfg.fi.upm.es;
 
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URL;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
@@ -19,6 +21,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 public class UtilidadesXML {
    
@@ -60,9 +63,27 @@ public class UtilidadesXML {
     }
    
     
-    public static Document String2Document(String xmlString) throws Exception {
-        DocumentBuilder db =  DocumentBuilderFactory.newInstance().newDocumentBuilder();
-        Document XMLDoc = db.parse(new InputSource(new StringReader(xmlString)));
+    public static Document String2Document(String xmlString)  {
+        DocumentBuilder db;
+        Document XMLDoc;
+		try {
+			db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+	        XMLDoc = db.parse(new InputSource(new StringReader(xmlString)));
+		} catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			
+			e.printStackTrace();
+			return null;
+		} catch (SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+
         return XMLDoc;
       }
     

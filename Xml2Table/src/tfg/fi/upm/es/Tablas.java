@@ -118,8 +118,8 @@ public class Tablas {
 			 this.insertarQueryCreate(tabla.toLowerCase());
 		 }
 		 Columnas c=this.tablas.get(tabla.toLowerCase());
-		 boolean existe=this.existeColumnaEnTabla(tabla.toLowerCase(), columna);		
-		 int l=c.insertarColumna(columna, longitud,tabla.toLowerCase());////////////////////////////////
+		 boolean existe=this.existeColumnaEnTabla(tabla.toLowerCase(), columna.replaceAll(":cbc", ""));		
+		 int l=c.insertarColumna(columna.replaceAll(":cbc", ""), longitud,tabla.toLowerCase());////////////////////////////////
 		 if (!existe)
 			 	this.insertarColumnaQueryAlter(tabla.toLowerCase(), columna, l);
  
@@ -128,18 +128,18 @@ public class Tablas {
 
 	 public boolean existeColumnaEnTabla(String tabla,String columna){
 		 Columnas c=tablas.get(tabla.toLowerCase());
-		 return c.existeColumna(columna);
+		 return c.existeColumna(columna.replaceAll(":cbc", ""));
 	 }
 	 
 	 public int obtenerLongitudColumna(String tabla,String columna){
 		 Columnas c=tablas.get(tabla.toLowerCase());
-		 return c.obtenerLongitudColumna(columna);
+		 return c.obtenerLongitudColumna(columna.replaceAll(":cbc", ""));
 	 }
 	 /// No usar
 	 public void CambiarLongitudColumna(String tabla,String columna,int longitud){
 		 Columnas c=tablas.get(tabla.toLowerCase());
-		 c.setLongitudColumna(columna, longitud);
-		 String query="ALTER TABLE "+tabla.toLowerCase()+" MODIFY "+columna+" VARCHAR("+longitud+")";
+		 c.setLongitudColumna(columna.replaceAll(":cbc", ""), longitud);
+		 String query="ALTER TABLE "+tabla.toLowerCase()+" MODIFY "+columna.replaceAll(":cbc", "")+" VARCHAR("+longitud+")";
 		 bd.ejecutarQuery(query);
 		 System.out.println("Ejecutada query: "+query);
 	 }
@@ -223,26 +223,26 @@ public class Tablas {
 		 
 		 public int insertarColumna(String nombre,int longitud,String tabla){
 			 int l;
-			 if (this.existeColumna(nombre)){
-				 l=col.get(nombre);
+			 if (this.existeColumna(nombre.replaceAll(":cbc", ""))){
+				 l=col.get(nombre.replaceAll(":cbc", ""));
 			 } else {
-				 if (nombre.equalsIgnoreCase("Description") || nombre.equalsIgnoreCase("Name") || nombre.equalsIgnoreCase("Note")){
-						 l=1000;
-						 if ((longitud<l)){
-							 String query="ALTER TABLE "+tabla.toLowerCase()+" MODIFY "+nombre+" VARCHAR("+l+")";
+				 if (nombre.replaceAll(":cbc", "").equalsIgnoreCase("Description") || nombre.equalsIgnoreCase("Name") || nombre.equalsIgnoreCase("Note")){
+						 l=200;
+						 if ((longitud> this.obtenerLongitudColumna(nombre) )){
+							 String query="ALTER TABLE "+tabla.toLowerCase()+" MODIFY "+nombre.replaceAll(":cbc", "")+" VARCHAR("+longitud+")";
 							 modificaciones.add(query);
 
 						 }
 				 }
 				 else
-					 l=200;
+					 l=20;
 			 }
-			 if (longitud>l && longitud < 1000){
-				 l=1000;
-				 String query="ALTER TABLE "+tabla+" MODIFY "+nombre+" VARCHAR("+l+")";
+			 if (longitud>l && longitud < 200){
+				 l=200;
+				 String query="ALTER TABLE "+tabla+" MODIFY "+nombre.replaceAll(":cbc", "")+" VARCHAR("+l+")";
 				 modificaciones.add(query);
 			 }
-			 col.put(nombre, l);
+			 col.put(nombre.replaceAll(":cbc", ""), l);
 			 
 			 return l;
 		 }

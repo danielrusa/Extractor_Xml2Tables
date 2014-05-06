@@ -34,6 +34,9 @@ public class ExtractorXml {
 		this.tipo=resultado[0];
 		this.xml=resultado[1];
 		tratable=(xml.trim()!=null && xml.trim()!="" && !xml.contains("<!--/*"));
+		doc = UtilidadesXML.String2Document(xml);
+		if (doc==null)
+			tratable=false;
 		if (tratable){
 			this.d=d;
 			this.t=t;
@@ -41,7 +44,7 @@ public class ExtractorXml {
 
 			try {
 
-				doc = UtilidadesXML.String2Document(xml);
+
 				NodeList nl=doc.getChildNodes();
 				raiz=nl.item(0).getNodeName().trim();
 				padre=raiz;

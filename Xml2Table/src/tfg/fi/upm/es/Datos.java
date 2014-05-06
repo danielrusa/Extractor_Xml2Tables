@@ -60,14 +60,17 @@ public class Datos {
     	String tabla=n.getParentNode().getNodeName().replaceAll("cac:", "").replaceAll("ext:", "").toLowerCase();
     	String nombrePadreTabla=n.getParentNode().getParentNode().getNodeName().replaceAll("cac:", "").replaceAll("ext:", "");
     	ArrayList<Tuplas> at=this.tablas.get(tabla.toLowerCase());
+    	int lc=ta.obtenerLongitudColumna(tabla, nombreColumna);
+    	if (lc<1)
+    		lc=200;
     	boolean insertado=false;   	
     	for (int i=0;i<at.size()&&!insertado;i++){ // Para todos el array de Tuplas columna,valor
     		Tuplas t=at.get(i);
     		
     		if (!t.existeColumna(nombreColumna) /*&& t.getPath().trim().equals(path)*/){ // Si no esta la columna lo añado
     			String d;
-    			if (dato.length()>=1000)
-    				d=dato.substring(0, 999);
+    			if (dato.length()>=lc)
+    				d=dato.substring(0, lc-1);
     			else
     				d=dato;
     			t.insertarDatoEnColumna(nombreColumna, d);
